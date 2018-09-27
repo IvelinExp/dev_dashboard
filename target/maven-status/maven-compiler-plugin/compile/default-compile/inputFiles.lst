@@ -1,0 +1,12 @@
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\entities\Sprint.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\main\Dashboard.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\util\DevSprints.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\plan\SprintMapper.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\entities\Developer.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\util\StringUtils.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\entities\Feature.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\util\HibernateUtil.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\plan\AbstractMapper.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\util\UserStoryStatusNotInProgress.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\entities\Story.java
+C:\Workspaces\Planning_Dashboard\dev_dashboard\src\main\java\dev\dashboard\util\UserStoryStatusInProgressOrDone.java

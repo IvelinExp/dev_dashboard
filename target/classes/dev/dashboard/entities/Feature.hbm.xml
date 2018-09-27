@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+                                   "http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated Apr 7, 2018 6:45:56 PM by Hibernate Tools 3.5.0.Final -->
+<hibernate-mapping>
+ <class name="dev.dashboard.entities.Feature" table="FEATURE">
+  <id name="id" type="long">
+   <column name="ID"/>
+   <generator class="assigned"/>
+  </id>
+  <property generated="never" lazy="false" name="blocks" type="java.lang.String">
+   <column name="BLOCKS"/>
+  </property>
+  <property generated="never" lazy="false" name="children" type="java.lang.String">
+   <column name="CHILDREN"/>
+  </property>
+  <property generated="never" lazy="false" name="featureSequence" type="java.math.BigDecimal">
+   <column name="FEATURESEQUENCE"/>
+  </property>
+  <property generated="never" lazy="false" name="ownedBy" type="java.lang.String">
+   <column name="OWNEDBY"/>
+  </property>
+  <property generated="never" lazy="false" name="parent" type="java.math.BigDecimal">
+   <column name="PARENT"/>
+  </property>
+  <property generated="never" lazy="false" name="status" type="java.lang.String">
+   <column name="STATUS"/>
+  </property>
+  <property generated="never" lazy="false" name="summary" type="java.lang.String">
+   <column name="SUMMARY"/>
+  </property>
+  <list lazy="true" name="stories" table="STORY">
+   <key>
+    <column name="ID"/>
+   </key>
+   <list-index base="0"/>
+   <one-to-many class="dev.dashboard.entities.Story"/>
+  </list>
+  <property name="estimate" type="double"/>
+ </class>
+</hibernate-mapping>

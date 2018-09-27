@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!DOCTYPE hibernate-mapping PUBLIC "-//Hibernate/Hibernate Mapping DTD 3.0//EN"
+"http://hibernate.sourceforge.net/hibernate-mapping-3.0.dtd">
+<!-- Generated Apr 7, 2018 6:45:56 PM by Hibernate Tools 3.5.0.Final -->
+<hibernate-mapping>
+    <class name="dev.dashboard.entities.Story" table="STORY">
+        <id name="id" type="long">
+            <column name="ID" />
+            <generator class="assigned" />
+        </id>
+        <property name="additionaleffort" type="java.lang.String">
+            <column name="ADDITIONALEFFORT" />
+        </property>
+        <property name="blocks" type="java.lang.String">
+            <column name="BLOCKS" />
+        </property>
+        <property name="developmentSequence" type="java.lang.String">
+            <column name="DEVELOPMENTSEQUENCE" />
+        </property>
+        <property name="iteration" type="java.lang.String">
+            <column name="ITERATION" />
+        </property>
+        <property name="maincomponent" type="java.lang.String">
+            <column name="MAINCOMPONENT" />
+        </property>
+        <property name="ownedBy" type="java.lang.String">
+            <column name="OWNEDBY" />
+        </property>
+        <property name="status" type="java.lang.String">
+            <column name="STATUS" />
+        </property>
+        <property name="summary" type="java.lang.String">
+            <column name="SUMMARY" />
+        </property>
+        <many-to-one name="feature" class="dev.dashboard.entities.Feature" fetch="join">
+            <column name="FEATURE" />
+        </many-to-one>
+    </class>
+</hibernate-mapping>
