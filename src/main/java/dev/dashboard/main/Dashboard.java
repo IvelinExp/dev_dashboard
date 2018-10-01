@@ -52,7 +52,6 @@ public class Dashboard {
 				case "6":
 					new PrintSysOutImp("Plan US for Sprint - Enter US:");
 					Long tempUSID = in.nextLong();
-					
 					new PrintSysOutImp("Enter Developer ID :");
 					HibernateUtil.printDevelopers();
 					Long devId = in.nextLong();

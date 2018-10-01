@@ -2,24 +2,35 @@ package dev.dashboard.entities;
 
 import java.io.Serializable;
 import javax.persistence.*;
-import java.math.BigDecimal;
-
 
 /**
  * The persistent class for the STORIES database table.
  * 
  */
 @Entity
-@Table(name="STORIES")
-@NamedQuery(name="Story.findAll", query="SELECT s FROM Story s")
+@Table(name = "STORIES")
+
+@NamedQueries({
+
+		@NamedQuery(name = Story.FIND_ALL, query = "SELECT s FROM Story s"),
+
+		@NamedQuery(name = Story.FIND_BY_ID, query = "SELECT s FROM Story s "
+
+				+ "where s.id = :id")
+
+})
 public class Story implements Serializable {
+
+	public static final String FIND_ALL = "Story.FindAll";
+	public static final String FIND_BY_ID = "Story.FindByID";
+
 	private static final long serialVersionUID = 1L;
 
 	private String additionaleffort;
 
 	private String blocks;
 
-	@Column(name="DEVELOPMENT_SEQUENCE")
+	@Column(name = "DEVELOPMENT_SEQUENCE")
 	private String developmentSequence;
 
 	private Double estimate;
@@ -30,15 +41,15 @@ public class Story implements Serializable {
 
 	private String maincomponent;
 
-	@Column(name="OWNED_BY")
+	@Column(name = "OWNED_BY")
 	private String ownedBy;
 
 	private String parent;
 
-	@Column(name="PL_DEV")
+	@Column(name = "PL_DEV")
 	private Long plDev;
 
-	@Column(name="PL_SPRINT")
+	@Column(name = "PL_SPRINT")
 	private String plSprint;
 
 	private String sprint;
@@ -47,10 +58,10 @@ public class Story implements Serializable {
 
 	private String summary;
 
-	@Column(name="\"TYPE\"")
+	@Column(name = "\"TYPE\"")
 	private String type;
 
-	@Column(name="USER_STORY_TECHNICAL_OWNER")
+	@Column(name = "USER_STORY_TECHNICAL_OWNER")
 	private String userStoryTechnicalOwner;
 
 	public Story() {
@@ -92,8 +103,8 @@ public class Story implements Serializable {
 		return this.id;
 	}
 
-	public void setId(Long id) {
-		this.id = id;
+	public static void setId(Long id) {
+		id = id;
 	}
 
 	public String getIteration() {
