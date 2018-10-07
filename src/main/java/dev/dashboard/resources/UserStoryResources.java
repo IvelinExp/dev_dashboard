@@ -27,101 +27,96 @@ import dev.dashboard.ejb.UserStoryHandler;
 import dev.dashboard.entities.Story;
 
 @Stateless
-@Path("us")
-@Produces({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
-@Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML})
+@Path("/us")
+@Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
+@Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class UserStoryResources {
 
-    @Context
-    UriInfo uriInfo;
+	@Context
+	UriInfo uriInfo;
 
-    @Inject
-    UserStoryHandler  userStoryHandler;
+	@Inject
+	UserStoryHandler userStoryHandler;
 
-    @GET
-    public Response allUserStories() {
-        List<Story> all = this.userStoryHandler.findAllBook();
+	@GET
+	public Response allUserStories() {
+		List<Story> all = this.userStoryHandler.findAllBook();
 
-        if (all == null || all.isEmpty()) {
-            return Response.noContent().build();
-        }
+		if (all == null || all.isEmpty()) {
+			return Response.noContent().build();
+		}
 
-        JsonArray data = all.stream() 
-                .map(this::toJson)
-                .collect(
-                        Json::createArrayBuilder,
-                        JsonArrayBuilder::add,
-                        JsonArrayBuilder::add
-                ).build();
+		JsonArray data = all.stream().map(this::toJson)
+				.collect(Json::createArrayBuilder, JsonArrayBuilder::add, JsonArrayBuilder::add).build();
 
-        return Response.ok().entity(data).build();
-    }
+		return Response.ok().entity(data).build();
+	}
 
-    @GET
-    @Path("{id}")
-    public Response findById(@PathParam("id") final Long id) {
-        Story story = this.userStoryHandler.findById(id);
+	@GET
+	@Path("/sayHello")
+	public String sayHello() {
+		return "<h1>Hello World</h1>";
+	}
 
-        if (story == null) {
-            return Response.noContent().build();
-        }
+	@GET
+	@Path("{id}")
+	public Response findById(@PathParam("id") final Long id) {
+		Story story = this.userStoryHandler.findById(id);
 
-        return Response.ok().entity(toJson(story)).build();
-    }
+		if (story == null) {
+			return Response.noContent().build();
+		}
 
-    @POST
-    public Response create(@Valid Story story) {
-        this.userStoryHandler.addUserStory(story);
+		return Response.ok().entity(toJson(story)).build();
+	}
 
-        URI self = uriBuilder(story.getId());
-        
-        return Response.created(self).build();
-    }
+	@POST
+	public Response create(@Valid Story story) {
+		this.userStoryHandler.addUserStory(story);
 
-    @PUT
-    @Path("{id}")
-    public Response update(@PathParam("id") final Long sid, @Valid Story story) {
-        URI self = uriBuilder(sid);
+		URI self = uriBuilder(story.getId());
 
-        this.userStoryHandler.updateStory(sid, story); 
+		return Response.created(self).build();
+	}
 
-        return Response.accepted().build();
-    }
+	@PUT
+	@Path("{id}")
+	public Response update(@PathParam("id") final Long sid, @Valid Story story) {
+		URI self = uriBuilder(sid);
 
-    @DELETE
-    @Path("{slug}")
-    public Response remove(@PathParam("id") final Long slug) {
-        this.userStoryHandler.remove(slug);
+		this.userStoryHandler.updateStory(sid, story);
 
-        return Response.ok().build();
-    }
-    
-    @GET
-    @Path("{id}/orders")
-    public Response checkOrder(@PathParam("id") Long id) {
-        URI self = uriBuilder(id);
-        JsonObject book = this.userStoryHandler.checkOrder(id, self);
-        
-        return Response.ok().entity(book).build();
-    }
+		return Response.accepted().build();
+	}
 
-    private JsonObject toJson(Story story) {
-        URI self = uriBuilder(story.getId());
+	@DELETE
+	@Path("{slug}")
+	public Response remove(@PathParam("id") final Long slug) {
+		this.userStoryHandler.remove(slug);
 
-        return Json.createObjectBuilder()
-        		 .add("id", story.getId())
-                 .add("summary", story.getSummary())
-                 .add("dev_sequence", story.getDevelopmentSequence())
-                 .add("status", story.getStatus())
-                 .add("estimate", story.getEstimate())
-                 .add("_links", Json.createObjectBuilder()
-                        .add("rel", "self")
-                        .add("href", self.toString())
-                ).build();
-    }
+		return Response.ok().build();
+	}
 
-    private URI uriBuilder(Long id) {
-        return this.uriInfo.getBaseUriBuilder().path(UserStoryResources.class)
-                .path(UserStoryResources.class, "findBySlug").build(id);
-    }
+	@GET
+	@Path("{id}/orders")
+	public Response checkOrder(@PathParam("id") Long id) {
+		URI self = uriBuilder(id);
+		JsonObject book = this.userStoryHandler.checkOrder(id, self);
+
+		return Response.ok().entity(book).build();
+	}
+
+	private JsonObject toJson(Story story) {
+		URI self = uriBuilder(story.getId());
+
+		return Json.createObjectBuilder().add("id", story.getId()).add("summary", story.getSummary())
+				.add("dev_sequence", story.getDevelopmentSequence()).add("status", story.getStatus())
+				.add("estimate", story.getEstimate())
+				.add("_links", Json.createObjectBuilder().add("rel", "self").add("href", self.toString())).build();
+	}
+
+	private URI uriBuilder(Long id) {
+		return this.uriInfo.getBaseUriBuilder().path(UserStoryResources.class)
+				.path(UserStoryResources.class, "findById").build(id);
+	}
 }
