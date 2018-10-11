@@ -33,7 +33,7 @@ public class Story implements Serializable {
 	@Column(name = "DEVELOPMENT_SEQUENCE")
 	private String developmentSequence;
 
-	private Double estimate;
+	private Double estimate = 0.0;
 	@Id
 	private Long id;
 

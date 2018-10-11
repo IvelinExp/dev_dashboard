@@ -23,8 +23,11 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+
 import dev.dashboard.ejb.UserStoryHandler;
 import dev.dashboard.entities.Story;
+import dev.dashboard.services.UserStoryService;
+import dev.dashboard.util.HibernateUtil;
 
 @Stateless
 @Path("us")
@@ -37,10 +40,13 @@ public class UserStoryResources {
 
     @Inject
     UserStoryHandler  userStoryHandler;
+    @Inject 
+    UserStoryService userStoryService;
+    
 
     @GET
     public Response allUserStories() {
-        List<Story> all = this.userStoryHandler.findAllBook();
+        List<Story> all = this.userStoryHandler.findAllUs();
 
         if (all == null || all.isEmpty()) {
             return Response.noContent().build();
@@ -59,8 +65,8 @@ public class UserStoryResources {
 
     @GET
     @Path("{id}")
-    public Response findById(@PathParam("id") final Long id) {
-        Story story = this.userStoryHandler.findById(id);
+    public Response findById(@PathParam("id") final String id) {
+        Story story = this.userStoryService.findById(id);
 
         if (story == null) {
             return Response.noContent().build();
@@ -116,12 +122,12 @@ public class UserStoryResources {
                  .add("estimate", story.getEstimate())
                  .add("_links", Json.createObjectBuilder()
                         .add("rel", "self")
-                        .add("href", self.toString())
-                ).build();
+                       .add("href", self.toString()))
+                .build();
     }
-
+ 
     private URI uriBuilder(Long id) {
         return this.uriInfo.getBaseUriBuilder().path(UserStoryResources.class)
-                .path(UserStoryResources.class, "findBySlug").build(id);
+                .path(UserStoryResources.class, "findById").build(id);
     }
 }

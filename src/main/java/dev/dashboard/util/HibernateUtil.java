@@ -9,9 +9,13 @@ import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.naming.directory.NoSuchAttributeException;
+import javax.persistence.EntityManager;
 
 import org.hibernate.Criteria;
+import org.hibernate.HibernateException;
 import org.hibernate.Query;
 import org.hibernate.Session;
 import org.hibernate.SessionException;
@@ -35,27 +39,33 @@ public class HibernateUtil {
 	final static Logger LOGGER = Logger.getLogger(HibernateUtil.class.getName());
 
 	// This Method Is Used To Create The Hibernate's SessionFactory Object
-	private static SessionFactory buildSessionFactory() {
+	private static SessionFactory buildSessionFactory() throws NamingException {
 		// Creating Configuration Instance & Passing Hibernate Configuration
 		// File
 		Configuration configObj = new Configuration();
-		configObj.configure("hibernate.cfg.xml");
+//		configObj.configure("hibernate.cfg.xml");
 		configObj.addAnnotatedClass(dev.dashboard.entities.Developer.class)
 				.addAnnotatedClass(dev.dashboard.entities.Story.class)
 				.addAnnotatedClass(dev.dashboard.entities.Feature.class)
-				.addAnnotatedClass(dev.dashboard.entities.Task.class);
+				.addAnnotatedClass(dev.dashboard.entities.Task.class)
+				.setProperty("hibernate.connection.datasource", "jdbc/OracleDS")
+				.setProperty("hibernate.dialect", "org.org.hibernate.dialect.Oracle10gDialect");
 
 		// Since Hibernate Version 4.x, ServiceRegistry Is Being Used
 		ServiceRegistry serviceRegistryObj = new StandardServiceRegistryBuilder()
 				.applySettings(configObj.getProperties()).build();
 
 		// Creating Hibernate SessionFactory Instance
-		sessionFactoryObj = configObj.buildSessionFactory(serviceRegistryObj);
+		// sessionFactoryObj =
+		// configObj.configure().buildSessionFactory(serviceRegistryObj);
+		// sessionObj = sessionFactoryObj.openSession();
+		InitialContext ctx = new InitialContext();
+		sessionFactoryObj = (SessionFactory) ctx.lookup("java:hibernate/SessionFactory");
 		sessionObj = sessionFactoryObj.openSession();
 		return sessionFactoryObj;
 	}
 
-	private static void startSession() {
+	private static void startSession() throws HibernateException, NamingException {
 
 		if (sessionObj == null) {
 			sessionObj = buildSessionFactory().openSession();
@@ -65,7 +75,7 @@ public class HibernateUtil {
 			sessionObj = buildSessionFactory().openSession();
 			sessionObj.beginTransaction();
 		}
-				
+
 	}
 
 	public static void createDeveloper(String name) {
@@ -122,55 +132,50 @@ public class HibernateUtil {
 		}
 	}
 
-	public static void planUserStoryForSprint(Story story, Developer dev, String devSprint) {
+	public static void planUserStoryForSprint(Story story, Developer dev, String devSprint)
+			throws HibernateException, NamingException {
 
 		startSession();
 
 		story.setPlDev(dev.getId());
-		
-		
-		
+
 		if (DevSprints.contains(devSprint)) {
 			story.setPlSprint(devSprint);
-		}else {
-			System.out.println ("Dev Sprint not found, defaulting to null");
+		} else {
+			System.out.println("Dev Sprint not found, defaulting to null");
 			story.setPlSprint(null);
 		}
 		sessionObj.getTransaction().commit();
 
 	}
-	
-	
-	public static Story getStoryByID (Long storyID) {
+
+	public static Story getStoryByID(Long storyID) throws HibernateException, NamingException {
 		startSession();
 		Criteria criteria = sessionObj.createCriteria(Story.class);
 
 		criteria.add(Restrictions.eq("id", storyID));
 		List<?> stories = criteria.list();
-		
-		if (stories.size() == 0) return null;
+
+		if (stories.size() == 0)
+			return null;
 		return (Story) stories.get(0);
-		
-		
+
 	}
 
-	
-	
-	public static Developer getDevByID (Long devID) {
+	public static Developer getDevByID(Long devID) throws HibernateException, NamingException {
 		startSession();
 		Criteria criteria = sessionObj.createCriteria(Developer.class);
 
 		criteria.add(Restrictions.eq("id", devID));
 		List<?> devs = criteria.list();
-		
-		if (devs.size() == 0) return null;
+
+		if (devs.size() == 0)
+			return null;
 		return (Developer) devs.get(0);
-		
-		
+
 	}
 
-	
-	public static void printDevelopers() {
+	public static void printDevelopers() throws HibernateException, NamingException {
 
 		try {
 			startSession();
@@ -195,7 +200,7 @@ public class HibernateUtil {
 		}
 	}
 
-	public static Double getEstimateForFeature(Integer featureId) {
+	public static Double getEstimateForFeature(Integer featureId) throws HibernateException, NamingException {
 		startSession();
 
 		Criteria criteria = sessionObj.createCriteria(Story.class);
@@ -224,6 +229,7 @@ public class HibernateUtil {
 		Double returnSum = 0.0;
 
 		try {
+			startSession();
 
 			Criteria crit = sessionObj.createCriteria(Task.class);
 
@@ -232,8 +238,8 @@ public class HibernateUtil {
 
 			if (tasks.isEmpty()) {
 				/*
-				 * could not find estimate, might be refactored to look only for
-				 * /* US in status Ready For Development
+				 * could not find estimate, might be refactored to look only for /* US in status
+				 * Ready For Development
 				 */
 				return calculateAvgTimeSpendForUserStoryInDays(userStory);
 			} else {
@@ -256,8 +262,8 @@ public class HibernateUtil {
 	private static Double calculateAvgTimeSpendForUserStoryInDays(Story userStory) {
 
 		/**
-		 * select MAINCOMPONENT, Round( SUM(ESTIMATEH) / COUNT(STORIES.ID) / 8,
-		 * 2) as avgTSP, COUNT(STORIES.ID)
+		 * select MAINCOMPONENT, Round( SUM(ESTIMATEH) / COUNT(STORIES.ID) / 8, 2) as
+		 * avgTSP, COUNT(STORIES.ID)
 		 * 
 		 * from STORIES
 		 * 
@@ -266,9 +272,9 @@ public class HibernateUtil {
 		 * 
 		 * on TASKS.PARENT = concat('#',STORIES.ID )
 		 * 
-		 * where STORIES.MAINCOMPONENT <> 'Unidentified' and TASKS.SUMMARY like
-		 * 'DEV%' and STORIES.ITERATION not in ('Sprint 4', 'Sprint 3', 'Sprint
-		 * 1 (1.0)','Sprint 2 (1.0)')
+		 * where STORIES.MAINCOMPONENT <> 'Unidentified' and TASKS.SUMMARY like 'DEV%'
+		 * and STORIES.ITERATION not in ('Sprint 4', 'Sprint 3', 'Sprint 1
+		 * (1.0)','Sprint 2 (1.0)')
 		 * 
 		 * group by STORIES.MAINCOMPONENT order by avgTSP desc;
 		 **/
@@ -427,7 +433,7 @@ public class HibernateUtil {
 
 	}
 
-	public static HashMap<Long, Story> getPOCUserStories() {
+	public static HashMap<Long, Story> getPOCUserStories() throws HibernateException, NamingException {
 		HashMap<Long, Story> storyMap = new HashMap<Long, Story>();
 		try {
 			startSession();
@@ -464,7 +470,7 @@ public class HibernateUtil {
 
 	}
 
-	public static void getAvaliableReleases() {
+	public static void getAvaliableReleases() throws HibernateException, NamingException {
 		try {
 			startSession();
 
