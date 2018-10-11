@@ -26,7 +26,7 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 
 	}
 
-	public Session OpenCurrentSession() {
+	public Session openCurrentSession() {
 
 		currentSession = getSessionFactory().openSession();
 		return currentSession;
