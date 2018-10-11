@@ -2,15 +2,18 @@
 <!DOCTYPE hibernate-configuration PUBLIC "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
                                          "http://hibernate.sourceforge.net/hibernate-configuration-3.0.dtd">
 <hibernate-configuration>
- <session-factory name="">
+ <session-factory name="IveliNSF">
   <property name="hibernate.connection.driver_class">oracle.jdbc.driver.OracleDriver</property>
   <property name="hibernate.connection.url">jdbc:oracle:thin:@127.0.0.1:1521:xe</property>
   <property name="hibernate.connection.username">ivelin</property>
-  <property name="hibernate.connection.password">kurec</property>
+  <property name="hibernate.connection.password">propapwd</property>
   <property name="hibernate.dialect">org.hibernate.dialect.Oracle10gDialect</property>
   <property name="hibernate.default_schema">IVELIN</property>
   <property name="show_sql">true</property>
   <property name="hibernate.show_sql">true</property>
   <property name="hibernate.transaction.auto_close_session">true</property>
+  <property name="hibernate.current_session_context_class">thread</property>
+  <mapping class="dev.dashboard.entities.Story"/>
+  <mapping class="dev.dashboard.entities.Task"/>
  </session-factory>
 </hibernate-configuration>

@@ -9,14 +9,18 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import javax.naming.NamingException;
+
+import org.hibernate.HibernateException;
+
 import dev.dashboard.entities.Story;
 import dev.dashboard.util.*;
 
-public class SprintMapper implements AbstractSprintMapper {
+public class SprintMapper  {
 
 	final static Logger LOGGER = Logger.getLogger(SprintMapper.class.getName());
 
-	public void populateSprint() {
+	public void populateSprint() throws HibernateException, NamingException {
 		int countOfUSNotInProcess = 0;
 		int countOfUSInProcess = 0;
 
