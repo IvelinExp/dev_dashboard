@@ -7,8 +7,6 @@ import dev.dashboard.entities.Story;
 
 public class UserStoryService {
 
-	
-	
 	private static UserStoryDao userStoryDao;
 
 	public UserStoryService() {
@@ -39,6 +37,16 @@ public class UserStoryService {
 		Story story = userStoryDao.findById(id);
 		userStoryDao.delete(story);
 		userStoryDao.closeCurrentSessionwithTransaction();
+	}
+
+	public Double getEstimateForUserStory(Long id) {
+
+		userStoryDao.openCurrentSession();
+		Double estimate = userStoryDao.getEstimateforStory(id);
+		userStoryDao.closeCurrentSession();
+
+		return estimate;
+
 	}
 
 	public List<Story> findAll() {

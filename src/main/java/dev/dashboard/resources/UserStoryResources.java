@@ -23,6 +23,8 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.Response;
 import javax.ws.rs.core.UriInfo;
 
+import org.jboss.logging.Logger;
+import org.jboss.logging.Logger.Level;
 
 import dev.dashboard.ejb.UserStoryHandler;
 import dev.dashboard.entities.Story;
@@ -33,19 +35,19 @@ import dev.dashboard.entities.Story;
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 public class UserStoryResources {
 
-    @Context
-    UriInfo uriInfo;
+	@Context
+	UriInfo uriInfo;
 
-    @Inject
-    UserStoryHandler  userStoryHandler;
-    @Inject 
-    UserStoryService userStoryService;
-    
+	@Inject
+	UserStoryHandler userStoryHandler;
+	@Inject
+	UserStoryService userStoryService;
 
-    @GET
-    public Response allUserStories() {
-        List<Story> all = this.userStoryHandler.findAllUs();
+	private static final Logger LOGGER = Logger.getLogger(UserStoryResources.class.getName());
 
+	@GET
+	public Response allUserStories() {
+		List<Story> all = this.userStoryHandler.findAllUs();
 
 		if (all == null || all.isEmpty()) {
 			return Response.noContent().build();
@@ -57,7 +59,6 @@ public class UserStoryResources {
 		return Response.ok().entity(data).build();
 	}
 
- 
 	@GET
 	@Path("/sayHello")
 	public String sayHello() {
@@ -66,14 +67,20 @@ public class UserStoryResources {
 
 	@GET
 	@Path("{id}")
-	public Response findById(@PathParam("id") final String id) {
-		Story story = this.userStoryService.findById(id);
+	public Response findById(@PathParam("id") final String id)
+			throws javax.ejb.EJBException, java.lang.NullPointerException {
 
-		if (story == null) {
+		try {
+			Story story = this.userStoryService.findById(id);
+
+			return Response.ok().entity(toJson(story)).build();
+
+		} catch (Exception e) {
+
+			LOGGER.logf(Level.WARN, "Cannot Find Story with ID %s in DB", id);
 			return Response.noContent().build();
-		}
 
-		return Response.ok().entity(toJson(story)).build();
+		}
 	}
 
 	@POST
@@ -112,7 +119,7 @@ public class UserStoryResources {
 //                .build();
 //    }
 // 
- 
+
 	@GET
 	@Path("{id}/orders")
 	public Response checkOrder(@PathParam("id") Long id) {
@@ -125,9 +132,17 @@ public class UserStoryResources {
 	private JsonObject toJson(Story story) {
 		URI self = uriBuilder(story.getId());
 
+		Double estimate = 0.0;
+
+		if (story.getEstimate() == null) {
+
+			estimate = this.userStoryService.getEstimateForUserStory(story.getId());
+
+		}
+
 		return Json.createObjectBuilder().add("id", story.getId()).add("summary", story.getSummary())
 				.add("dev_sequence", story.getDevelopmentSequence()).add("status", story.getStatus())
-				.add("estimate", story.getEstimate())
+				.add("estimate", estimate)
 				.add("_links", Json.createObjectBuilder().add("rel", "self").add("href", self.toString())).build();
 	}
 
