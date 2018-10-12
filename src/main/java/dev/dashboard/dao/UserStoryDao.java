@@ -1,6 +1,8 @@
 package dev.dashboard.dao;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.validation.Valid;
 
@@ -31,7 +33,7 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 		currentSession = getSessionFactory().openSession();
 		return currentSession;
 
-		//change here
+		// change here
 	}
 
 	public Session openCurrentSessionwithTransaction() {
@@ -54,17 +56,19 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 
 		currentTransaction.commit();
 
-		currentSession.close();
+		if (currentSession.isConnected()) {
+			currentSession.close();
+
+		}
 
 	}
 
 	private static SessionFactory getSessionFactory() {
 
 		Configuration configuration = new Configuration().configure();
-		
+
 		configuration.addAnnotatedClass(Story.class);
 		configuration.addAnnotatedClass(Task.class);
-
 
 		StandardServiceRegistryBuilder builder = new StandardServiceRegistryBuilder()
 
@@ -115,19 +119,21 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 	public Story findById(String id) {
 
 		Story story = (Story) getCurrentSession().get(Story.class, Long.parseLong(id));
-		
+
 		story.setEstimate(getEstimateforStory(story.getId()));
 
+		persist(story);
 		return story;
 
 	}
 
 	public Double getEstimateforStory(Long id) {
 
-		double returnSum= 0.0;
+		double returnSum = 0.0;
 
 		Story story = (Story) getCurrentSession().get(Story.class, id);
 
+		
 		try {
 			Criteria crit = getCurrentSession().createCriteria(Task.class);
 
@@ -146,7 +152,6 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 					Task task = (Task) tasks.get(i);
 					returnSum += task.getEstimateh();
 				}
-			//	new PrintSysOutImp("Estimate for US: " + story.getId() + " = " + returnSum / 8);
 				return returnSum / 8;
 			}
 		} catch (Exception e) {
@@ -157,7 +162,7 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 
 	}
 
-	private  Double calculateAvgTimeSpendForUserStoryInDays(Story userStory) {
+	private Double calculateAvgTimeSpendForUserStoryInDays(Story userStory) {
 
 		/**
 		 * select MAINCOMPONENT, Round( SUM(ESTIMATEH) / COUNT(STORIES.ID) / 8, 2) as
@@ -178,17 +183,18 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 		 **/
 		Story story = (Story) getCurrentSession().get(Story.class, userStory.getId());
 
-		Query qry = getCurrentSession().createQuery("SELECT sum ( t.estimateh ) / count(s.id) from Story s, Task t    " +
-		// concat('#',STORIES.ID )
+		Query qry = getCurrentSession()
+				.createQuery("SELECT sum ( t.estimateh ) / count(s.id) from Story s, Task t    " +
+				// concat('#',STORIES.ID )
 
-				"where concat ('#', s.id) =  t.parent and " + "s.maincomponent <> :unIdent and " +
-				// 'Unidentified'
-				"t.summary like :devPRC and " +
-				// 'DEV%'
-				"s.iteration not in (:notSprints) and " +
-				// 'Sprint 4', 'Sprint 3', 'Sprint 1 (1.0)','Sprint 2
-				// (1.0)'
-				"s.maincomponent= :mainCo ")
+						"where concat ('#', s.id) =  t.parent and " + "s.maincomponent <> :unIdent and " +
+						// 'Unidentified'
+						"t.summary like :devPRC and " +
+						// 'DEV%'
+						"s.iteration not in (:notSprints) and " +
+						// 'Sprint 4', 'Sprint 3', 'Sprint 1 (1.0)','Sprint 2
+						// (1.0)'
+						"s.maincomponent= :mainCo ")
 				// .setParameter("conHashStories", "'#',STORIES.ID ")
 				.setParameter("unIdent", "Unidentified").setParameter("devPRC", "DEV%")
 				.setParameter("notSprints", "'Sprint 4', 'Sprint 3', 'Sprint 1(1.0)','Sprint 2'")
@@ -205,7 +211,8 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 		} else {
 
 			avgEst = 2.5;
-			//new PrintSysOutImp("Could not find history for component : " + userStory.getMaincomponent());
+			// new PrintSysOutImp("Could not find history for component : " +
+			// userStory.getMaincomponent());
 
 		}
 
@@ -214,6 +221,26 @@ public class UserStoryDao implements UserStoryDaoInterface<Story, String> {
 		// + " = " + avgEst);
 		return avgEst;
 	}
+
+	public Map<String, String> getUsEstimates() {
+
+		Map<String, String> map = new HashMap<String, String>();
+
+		Query qry = getCurrentSession().createSQLQuery(
+				"select substr( parent, -6), round(sum(tasks.estimateh)/count(tasks.id),2) as estimate from tasks where tasks.summary like '%DEV_%' and parent like '#%' group by parent");
+
+		List<Object[]> list = qry.list();
+
+		for (Object[] result : list) {
+			if (result[0] != null && result[1] != null) {
+				map.put(result[0].toString(), result[1].toString());
+
+			}
+		}
+
+		return map;
+
+	};
 
 	public void delete(Story entity) {
 

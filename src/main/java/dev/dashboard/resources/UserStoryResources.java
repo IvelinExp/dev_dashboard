@@ -1,10 +1,14 @@
 package dev.dashboard.resources;
 
 import java.net.URI;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.ws.rs.core.MediaType;
 import javax.ejb.Stateless;
+import javax.ejb.TransactionManagement;
+import javax.ejb.TransactionManagementType;
 import javax.inject.Inject;
 import javax.json.Json;
 import javax.json.JsonArray;
@@ -30,6 +34,7 @@ import dev.dashboard.ejb.UserStoryHandler;
 import dev.dashboard.entities.Story;
 
 @Stateless
+@TransactionManagement(value= TransactionManagementType.BEAN)
 @Path("/us")
 @Produces({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
 @Consumes({ MediaType.APPLICATION_JSON, MediaType.APPLICATION_XML })
@@ -83,6 +88,32 @@ public class UserStoryResources {
 		}
 	}
 
+	@GET
+	@Path("/getUsEstimates")
+	public Response getUsEstimates() throws javax.ejb.EJBException, java.lang.NullPointerException {
+
+		try {
+
+			HashMap<String, String> oBoy = new HashMap<String, String>();
+			
+			oBoy.putAll((Map<? extends String, ? extends String>) UserStoryService.getUsEstimates());
+			for (String name : oBoy.keySet()) {
+
+				String key = name.toString();
+				String value = oBoy.get(name).toString();
+				LOGGER.log(Level.INFO, key + " " + value);
+
+			}
+
+		} catch (Exception e) {
+
+			LOGGER.log(Level.WARN, "Too Optimistic Bruv");
+			return Response.noContent().build();
+
+		}
+		return null;
+	}
+
 	@POST
 	public Response create(@Valid Story story) {
 		this.userStoryHandler.addUserStory(story);
@@ -124,9 +155,9 @@ public class UserStoryResources {
 	@Path("{id}/orders")
 	public Response checkOrder(@PathParam("id") Long id) {
 		URI self = uriBuilder(id);
-		JsonObject book = this.userStoryHandler.checkOrder(id, self);
+		JsonObject story = this.userStoryHandler.checkOrder(id, self);
 
-		return Response.ok().entity(book).build();
+		return Response.ok().entity(story).build();
 	}
 
 	private JsonObject toJson(Story story) {
@@ -134,10 +165,28 @@ public class UserStoryResources {
 
 		Double estimate = 0.0;
 
+		HashMap<String, String> oBoy = new HashMap<String, String>();
+		
+		oBoy.putAll((Map<? extends String, ? extends String>) UserStoryService.getUsEstimates());
+		
 		if (story.getEstimate() == null) {
 
-			estimate = this.userStoryService.getEstimateForUserStory(story.getId());
+			if (oBoy.containsKey(story.getId().toString())) {
+				
+				estimate = Double.parseDouble(oBoy.get(story.getId().toString()));
+				story.setEstimate(estimate);
+				userStoryService.update(story);
+				
+			} else {
+				estimate = this.userStoryService.getEstimateForUserStory(story.getId());
+				story.setEstimate(estimate);
+				userStoryService.update(story);
+				
+			}
+			
 
+		} else {
+			estimate = story.getEstimate();
 		}
 
 		return Json.createObjectBuilder().add("id", story.getId()).add("summary", story.getSummary())

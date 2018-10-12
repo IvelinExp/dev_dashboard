@@ -1,11 +1,15 @@
 package dev.dashboard.resources;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import dev.dashboard.dao.UserStoryDao;
 import dev.dashboard.entities.Story;
 
 public class UserStoryService {
+
+	public static HashMap<String, String> storyEstimates;
 
 	private static UserStoryDao userStoryDao;
 
@@ -43,9 +47,28 @@ public class UserStoryService {
 
 		userStoryDao.openCurrentSession();
 		Double estimate = userStoryDao.getEstimateforStory(id);
+		userStoryDao.persist(userStoryDao.findById(id.toString()));
 		userStoryDao.closeCurrentSession();
 
 		return estimate;
+
+	}
+
+	public static Map<String, String> getUsEstimates() {
+
+		if (storyEstimates == null) {
+
+			userStoryDao.openCurrentSession();
+
+			storyEstimates = new HashMap<String, String>();
+
+			//returnMap.putAll((Map<String, String>) userStoryDao.getUsEstimates());
+
+			storyEstimates.putAll((Map<String, String>) userStoryDao.getUsEstimates());
+
+		}
+
+		return storyEstimates;
 
 	}
 
